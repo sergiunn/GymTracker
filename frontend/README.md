@@ -1,50 +1,40 @@
 # GymTracker Frontend
 
-React-based frontend for GymTracker application.
+The frontend is the part of the app people interact with. It will eventually let users sign up, log in, create workouts, and see their history in a simple dashboard.
 
-## Setup Instructions
+Right now, the project is still in the early stages of that setup. The backend is already in place, and the frontend will be built around it.
 
-### Prerequisites
-- Node.js (v14 or higher)
-- npm or yarn
+## What the frontend will do
 
-### Installation
+The planned frontend experience includes:
 
-1. Install dependencies:
+- a login page
+- a signup page
+- a page to create workouts
+- a page to view and filter existing workouts
+- a way to edit or delete workouts
+- a simple layout that feels clean and easy to use
+
+## Setup
+
+From the frontend folder:
+
 ```bash
 npm install
-```
-
-### Running the Development Server
-
-```bash
 npm run dev
 ```
 
-The development server will typically start on `http://localhost:5173`
+The dev server will usually start on port 5173.
 
-### Building for Production
+## Planned structure
 
-```bash
-npm run build
-```
+The frontend will be organized around a few simple folders:
 
-## Project Structure
+- pages for screens like login and dashboard
+- components for reused UI pieces
+- services for talking to the backend API
+- styles for the visual layout
 
-- `src/pages/` - Page components (Login, Dashboard, etc.)
-- `src/components/` - Reusable components
-- `src/services/` - API service calls
-- `src/context/` or `src/store/` - State management
-- `src/hooks/` - Custom React hooks
-- `src/styles/` - CSS/styling
+## Notes
 
-## Environment Variables
-
-Create a `.env` file for API configuration:
-```
-VITE_API_URL=http://localhost:5000
-```
-
-## Next Steps
-
-Phase 5 will build out the complete React component structure.
+The frontend will connect to the backend over HTTP and use the JWT token returned after login. That makes it possible to keep workout data private to each account.
