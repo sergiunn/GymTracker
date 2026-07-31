@@ -23,6 +23,10 @@ app.get('/health', (req, res) => {
 const authRoutes = require('./routes/auth');
 app.use('/api/auth', authRoutes);
 
+// Workouts routes
+const workoutsRoutes = require('./routes/workouts');
+app.use('/api/workouts', workoutsRoutes);
+
 // Error handling middleware
 app.use((err, req, res, next) => {
   console.error(err.stack);
