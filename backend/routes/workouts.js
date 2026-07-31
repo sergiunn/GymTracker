@@ -59,3 +59,76 @@ router.get('/', verifyToken, async (req, res) => {
 });
 
 module.exports = router;
+
+// GET /api/workouts/:id - get single workout (must belong to user)
+router.get('/:id', verifyToken, async (req, res) => {
+  try {
+    const userId = req.userId;
+    const workoutId = parseInt(req.params.id, 10);
+
+    const found = await db.query('SELECT * FROM workouts WHERE id = $1', [workoutId]);
+    if (found.rows.length === 0) return res.status(404).json({ error: 'Workout not found' });
+
+    const workout = found.rows[0];
+    if (workout.user_id !== userId) return res.status(403).json({ error: 'Forbidden' });
+
+    return res.json({ workout });
+  } catch (err) {
+    console.error('Get workout error:', err);
+    return res.status(500).json({ error: 'Failed to fetch workout' });
+  }
+});
+
+// PUT /api/workouts/:id - update workout (must belong to user)
+router.put('/:id', verifyToken, async (req, res) => {
+  try {
+    const userId = req.userId;
+    const workoutId = parseInt(req.params.id, 10);
+    const { exercise_name, muscle_group, reps, weight, workout_date } = req.body;
+
+    const found = await db.query('SELECT * FROM workouts WHERE id = $1', [workoutId]);
+    if (found.rows.length === 0) return res.status(404).json({ error: 'Workout not found' });
+    const workout = found.rows[0];
+    if (workout.user_id !== userId) return res.status(403).json({ error: 'Forbidden' });
+
+    // Build dynamic update
+    const fields = [];
+    const values = [];
+    let idx = 1;
+    if (exercise_name !== undefined) { fields.push(`exercise_name = $${idx++}`); values.push(exercise_name); }
+    if (muscle_group !== undefined) { fields.push(`muscle_group = $${idx++}`); values.push(muscle_group); }
+    if (weight !== undefined) { fields.push(`weight = $${idx++}`); values.push(weight); }
+    if (reps !== undefined) { fields.push(`reps = $${idx++}`); values.push(reps); }
+    if (workout_date !== undefined) { fields.push(`workout_date = $${idx++}`); values.push(workout_date); }
+
+    if (fields.length === 0) return res.status(400).json({ error: 'No fields to update' });
+
+    const sql = `UPDATE workouts SET ${fields.join(', ')} , updated_at = NOW() WHERE id = $${idx} RETURNING id, user_id, exercise_name, muscle_group, weight, reps, workout_date, updated_at`;
+    values.push(workoutId);
+
+    const result = await db.query(sql, values);
+    return res.json({ workout: result.rows[0] });
+  } catch (err) {
+    console.error('Update workout error:', err);
+    return res.status(500).json({ error: 'Failed to update workout' });
+  }
+});
+
+// DELETE /api/workouts/:id - delete workout (must belong to user)
+router.delete('/:id', verifyToken, async (req, res) => {
+  try {
+    const userId = req.userId;
+    const workoutId = parseInt(req.params.id, 10);
+
+    const found = await db.query('SELECT * FROM workouts WHERE id = $1', [workoutId]);
+    if (found.rows.length === 0) return res.status(404).json({ error: 'Workout not found' });
+    const workout = found.rows[0];
+    if (workout.user_id !== userId) return res.status(403).json({ error: 'Forbidden' });
+
+    await db.query('DELETE FROM workouts WHERE id = $1', [workoutId]);
+    return res.status(204).send();
+  } catch (err) {
+    console.error('Delete workout error:', err);
+    return res.status(500).json({ error: 'Failed to delete workout' });
+  }
+});
